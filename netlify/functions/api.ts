@@ -1,21 +1,25 @@
 import connect, { sql } from "@databases/sqlite";
-import { resourceUsage } from "process";
 import { Server } from "socket.io";
-import { get, prepare, set } from "./db";
-import { validateRegisterAdminSocketIdSecret } from "./utils";
-import { ClientSideChatType } from "./types";
+import { get, prepare, set } from "../../db";
+import { validateRegisterAdminSocketIdSecret } from "../../utils";
+import { ClientSideChatType } from "../../types";
 
-declare var require: any;
-
-const express = require("express");
+// declare var require: any;
+import express, { Router } from "express";
+import serverless from "serverless-http"
+// const express = require("express");
 const http = require("http");
 const app = express();
-
-
 
 const server = http.createServer(app);
 
 const db = connect();
+
+const router = Router();
+
+router.get("/hello", (req, res) => res.send("Hello World!"));
+
+app.use("/api/", router);
 
 // async function prepare() {
 //   await db.query(sql`
@@ -53,16 +57,19 @@ const prepared = prepare(db);
 
 async function remove(userId: string) {
   await prepared;
-  await db.query(sql`
+  await db
+    .query(
+      sql`
   DELETE FROM app_data WHERE userId=${userId}
-  `).catch((error)=>{
-     console.log("Unable to delete from app_data ", userId)
-  })
+  `
+    )
+    .catch((error) => {
+      console.log("Unable to delete from app_data ", userId);
+    });
 }
 
 async function run() {
-  try{
-    
+  try {
     console.log(await get("name", db, prepared));
     await set("name", "forbes", db, prepared);
     console.log(await get("name", db, prepared));
@@ -70,8 +77,8 @@ async function run() {
     console.log(await get("name", db, prepared));
     remove("name");
     console.log(await get("name", db, prepared));
-  }catch(err){
-    console.log("error bootstrapping database ", err)
+  } catch (err) {
+    console.log("error bootstrapping database ", err);
   }
 }
 
@@ -87,10 +94,10 @@ const io = new Server(server, {
   },
 });
 
-try{
+try {
   io.on("connection", (socket) => {
     console.log("connected to messages server");
-  
+
     socket.on("register-user", ({ userId }: { userId: string }) => {
       if (typeof userId === "string") {
         console.log("user registered");
@@ -102,17 +109,23 @@ try{
     // sending to admin
     socket.on(
       "send-to-admin",
-      async ({ message, userId }: { message: ClientSideChatType; userId: string }) => {
-        
+      async ({
+        message,
+        userId,
+      }: {
+        message: ClientSideChatType;
+        userId: string;
+      }) => {
         let adminSocketId = await get("admin", db, prepared);
-        if (typeof  adminSocketId === "string" && message) {
-            
+        if (typeof adminSocketId === "string" && message) {
           console.log("sending msg to admin ");
-          socket.broadcast.to(adminSocketId).emit("user-message", message, userId);
-        }  
+          socket.broadcast
+            .to(adminSocketId)
+            .emit("user-message", message, userId);
+        }
       }
     );
-  
+
     // sending to client can only be called by admin
     socket.on(
       "send-to-client",
@@ -124,17 +137,15 @@ try{
         userId: string;
       }) => {
         // save user Id and socket id
-  
+
         if (typeof userId === "string" && socket?.id) {
           let adminSocketId = await get("admin", db, prepared);
           let userSocketId = await get(userId, db, prepared);
           console.log("admin-socket-id ", adminSocketId);
           console.log("user-socket-id ", userSocketId);
-  
-  
+
           //  EDIT CODE TO ACCOUNT FOR MULTIPLE ADMIN INSTANCES
           if (adminSocketId === socket.id && message) {
-            
             console.log("unique id met ", userId);
             socket.broadcast.to(userSocketId).emit("send-message", message);
           }
@@ -142,7 +153,7 @@ try{
         }
       }
     );
-  
+
     socket.on("register-admin", ({ adminSecret }: { adminSecret: string }) => {
       if (typeof adminSecret === "string") {
         if (validateRegisterAdminSocketIdSecret(adminSecret)) {
@@ -154,10 +165,8 @@ try{
       }
     });
   });
-
-
-}catch(err){
-  console.log("error with socket.io ", err)
+} catch (err) {
+  console.log("error with socket.io ", err);
 }
 
 server.listen(process.env.PORT || 3001, () => {
@@ -165,8 +174,10 @@ server.listen(process.env.PORT || 3001, () => {
 });
 
 
-process.on("unhandledRejection", (reason:any, promise)=>{
+process.on("unhandledRejection", (reason: any, promise) => {
   console.log("UnhandledRejection at ", reason?.stack);
 
   // send information to error files using winston
-})
+});
+
+export const handler = serverless(app);
