@@ -16,11 +16,11 @@ const server = http.createServer(app);
 
 const db = connect();
 
-const router = Router();
+// const router = Router();
 
-router.get("/hello", (req, res) => res.send("Hello World!"));
+// router.get("/hello", (req, res) => res.send("Hello World!"));
 
-app.use("/api/", router);
+// app.use("/api/", router);
 
 // async function prepare() {
 //   await db.query(sql`
@@ -119,7 +119,9 @@ try {
       }) => {
         let adminSocketId = await get("admin", db, prepared);
         if (typeof adminSocketId === "string" && message) {
-          console.log("sending msg to admin ");
+          console.log("sending msg to admin user id is", userId, );
+          console.log("admin details ", adminSocketId);
+
           socket.broadcast
             .to(adminSocketId)
             .emit("user-message", message, userId);
@@ -138,8 +140,9 @@ try {
         userId: string;
       }) => {
         // save user Id and socket id
-
+      
         if (typeof userId === "string" && socket?.id) {
+          console.log("user id gotten ", userId)
           let adminSocketId = await get("admin", db, prepared);
           let userSocketId = await get(userId, db, prepared);
           console.log("admin-socket-id ", adminSocketId);
@@ -147,7 +150,7 @@ try {
 
           //  EDIT CODE TO ACCOUNT FOR MULTIPLE ADMIN INSTANCES
           if (adminSocketId === socket.id && message) {
-            console.log("unique id met ", userId);
+            console.log("unique id met ", userId, "socket-id is ", userSocketId)
             socket.broadcast.to(userSocketId).emit("send-message", message);
           }
           console.log("connected and socket id is ", socket.id, message);
@@ -165,7 +168,18 @@ try {
         return socket.disconnect();
       }
     });
+
+
+    socket.on("register-user", ({ userId }: { userId: string }) => {
+      if (typeof userId === "string") {
+          console.log("user-registered-mmmmmmmmmm")
+          set(userId, socket.id, db, prepared);
+      }
+    });
   });
+
+  
+  
 } catch (err) {
   console.log("error with socket.io ", err);
 }
@@ -180,4 +194,3 @@ process.on("unhandledRejection", (reason: any, promise) => {
 
   // send information to error files using winston
 });
-
