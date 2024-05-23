@@ -184,8 +184,8 @@ try {
   console.log("error with socket.io ", err);
 }
 
-server.listen(process.env.PORT || 3001, () => {
-  console.log("server listening on port 3001");
+server.listen(process.env.PORT || 3021, () => {
+  console.log("server listening on port 3021");
 });
 
 
