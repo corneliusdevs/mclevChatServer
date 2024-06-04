@@ -249,6 +249,8 @@ io.on("connection", (socket) => {
   
           // send up to last 80 unreceived messages to the admin
           socket.broadcast.to("admin").emit("new-user-message", allUnreceivedMssgs, userId);
+        }else{
+          socket.broadcast.to("admin").emit("new-user-message", [message], userId);
         }
       }catch(error){
         console.log("error on send-to-admin", error)
@@ -284,6 +286,10 @@ io.on("connection", (socket) => {
           //  EDIT CODE TO ACCOUNT FOR MULTIPLE ADMIN INSTANCES
           if (message) {
             // save the recieved messages to the messagesStore based on the userId of the recipient
+
+          // in if block
+          console.log("admin message is and about to send to the to client", message);
+
             messagesStore.saveMessage(
               {
                 messageId: message.id,
@@ -308,6 +314,10 @@ io.on("connection", (socket) => {
               socket.broadcast
                 .to(userId)
                 .emit("admin-message", allUnreceivedMssgs);
+            }else{
+              socket.broadcast
+              .to(userId)
+              .emit("admin-message", [message]);
             }
             // socket.broadcast.to(userId).emit("admin-message", message);
           }
