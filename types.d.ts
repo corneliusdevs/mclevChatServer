@@ -11,3 +11,8 @@ export type ChatType = {
 export type ClientSideChatType = ChatType & {
   status?: ChatStatus;
 };
+
+export type OnMessageReceivedPayload = {
+  messageIds: string[],
+  userId: string
+}

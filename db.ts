@@ -32,3 +32,16 @@ export  async function get(userId: string, db:DatabaseConnection, prepared:Promi
       return undefined;
     }
   }
+
+export  async function remove(userId: string, db:DatabaseConnection, prepared:Promise<void>) {
+    await prepared;
+    await db
+      .query(
+        sql`
+    DELETE FROM app_data WHERE userId=${userId}
+    `
+      )
+      .catch((error) => {
+        console.log("Unable to delete from app_data ", userId, error);
+      });
+  }

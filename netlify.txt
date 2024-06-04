@@ -1,3 +1,14 @@
 Admin URL: https://app.netlify.com/sites/mclevChatServerNew
 URL:       https://mclevChatServerNew.netlify.app
 Site ID:   dff84ad5-138b-4a1f-b9be-2d14d20a5b82
+
+
+
+https://mclevchatserver.adaptable.app
+
+
+
++ "Thanks for booking on the suuccess of reservation.
++ take down the history"
+
+
