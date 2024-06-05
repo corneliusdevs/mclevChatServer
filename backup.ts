@@ -7,7 +7,7 @@ import express, { Router } from "express";
 
 import { get, prepare, set } from "./db";
 import { ClientSideChatType } from "./types";
-import { validateRegisterAdminSocketIdSecret } from "./utils";
+import { validateAdminSecret } from "./utils";
 // const express = require("express");
 const http = require("http");
 const app = express();
@@ -160,7 +160,7 @@ try {
 
     socket.on("register-admin", ({ adminSecret }: { adminSecret: string }) => {
       if (typeof adminSecret === "string") {
-        if (validateRegisterAdminSocketIdSecret(adminSecret)) {
+        if (validateAdminSecret(adminSecret)) {
           console.log("admin registered");
           set("admin", socket.id, db, prepared);
         }
