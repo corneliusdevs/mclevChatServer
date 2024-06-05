@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.get = exports.set = exports.prepare = void 0;
+exports.remove = exports.get = exports.set = exports.prepare = void 0;
 const sqlite_1 = require("@databases/sqlite");
 function prepare(db) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -50,3 +50,16 @@ function get(userId, db, prepared) {
     });
 }
 exports.get = get;
+function remove(userId, db, prepared) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield prepared;
+        yield db
+            .query((0, sqlite_1.sql) `
+    DELETE FROM app_data WHERE userId=${userId}
+    `)
+            .catch((error) => {
+            console.log("Unable to delete from app_data ", userId, error);
+        });
+    });
+}
+exports.remove = remove;

@@ -283,15 +283,15 @@ io.on("connection", (socket) => {
       console.log("admin is chatting");
 
       try {
+        socket.broadcast
+        .to(userId)
+        .emit("admin-message", [message]);
         if (
           typeof userId === "string" &&
           socket.handshake.auth?.userId === "admin"
         ) {
           console.log("admin message is", message);
 
-          socket.broadcast
-          .to(userId)
-          .emit("admin-message", [message]);
 
           
           //  EDIT CODE TO ACCOUNT FOR MULTIPLE ADMIN INSTANCES
